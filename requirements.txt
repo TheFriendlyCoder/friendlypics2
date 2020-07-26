@@ -1,0 +1,4 @@
+qtpy
+requests
+friendlypins
+pyside2
