@@ -1,0 +1,42 @@
+language: python
+
+# Test against the oldest and newest supported version of Python only
+# NOTE: there appears to only be 1 version of pypy available on Travis
+#       right now, so we just test against that one version
+python:
+  - 3.8
+
+install:
+  # pinning coverage package until bugs with coveralls plugin is fixed
+  # https://github.com/z4r/python-coveralls/issues/73
+  - pip install tox tox-factor wheel python-coveralls "coverage<5.0"
+
+script:
+  - tox -e py38-lint
+  - tox -e py38-test
+  - tox -e py38-docs
+  - coveralls
+
+# Deploy to test.pypi.org for branches
+# Deploy to pypi.org for tags
+# NOTE: You can not replace builds published to pypi, even if you delete one
+#       so you must make sure your versions are always unique
+# NOTE: We also restrict publishing of packages using the latest supported
+#       Python version so we don't publish redundant packages
+jobs:
+  include:
+    - stage: deploy-release
+      python: 3.8
+      script:
+        - pip install twine tox
+        - tox -e package
+        - twine upload dist/*.whl -u $DEPLOY_USER -p $DEPLOY_PASS
+      if: tag IS true
+    - stage: deploy-snapshot
+      python: 3.8
+      script:
+        - pip install twine tox
+        - tox -e package
+        - twine upload --repository-url https://test.pypi.org/legacy/
+            dist/*.whl -u $DEPLOY_USER -p $DEPLOY_PASS
+      if: tag IS NOT true
