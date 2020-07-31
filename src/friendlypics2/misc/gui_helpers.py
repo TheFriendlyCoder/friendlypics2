@@ -14,7 +14,6 @@ def load_ui(file, parent):
         parent (object):
             reference to the Qt dialog object associated with the UI file
     """
-    # TODO: test with pyinstaller
     ui_file = resource_filename(PACKAGE_NAME, "data/ui/" + file)
     uic.loadUi(ui_file, parent)
 

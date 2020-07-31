@@ -142,10 +142,7 @@ def get_version_number(project):
 
     # Pre release versions need a non-numeric suffix on the version number
     retval += ".dev"
-    if 'TRAVIS_BUILD_NUMBER' in os.environ:
-        retval += os.environ['TRAVIS_BUILD_NUMBER']
-    else:
-        retval += "0"
+    retval += os.environ.get('TRAVIS_BUILD_NUMBER', "0")
 
     return retval
 
