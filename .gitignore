@@ -1,73 +1,34 @@
-# This file is used to ignore files which are generated
-# ----------------------------------------------------------------------------
+# Temporary build files
+__pycache__/
+*.py[cod]
+*.egg
+*.egg-info/
+sdist/
+dist/
+build/
 
-*~
-*.autosave
-*.a
-*.core
-*.moc
-*.o
-*.obj
-*.orig
-*.rej
-*.so
-*.so.*
-*_pch.h.cpp
-*_resource.rc
-*.qm
-.#*
-*.*#
-core
-!core/
-tags
-.DS_Store
-.directory
-*.debug
-Makefile*
-*.prl
-*.app
-moc_*.cpp
-ui_*.h
-qrc_*.cpp
-Thumbs.db
-*.res
-*.rc
-/.qmake.cache
-/.qmake.stash
+# Temporary unit test files
+htmlcov/
+.tox/
+.coverage.*
+docs/_*
+docs/api/*
+htmldocs/*
+.pytest_cache/
 
-# qtcreator generated files
-*.pro.user*
+# Virtual environmenments
+venv?/
+venv*/
 
-# xemacs temporary files
-*.flc
+# diff files
+**/*.orig
 
-# Vim temporary files
-.*.swp
+# project files
+.vscode/
+.idea/
 
-# Visual Studio generated files
-*.ib_pdb_index
-*.idb
-*.ilk
-*.pdb
-*.sln
-*.suo
-*.vcproj
-*vcproj.*.*.user
-*.ncb
-*.sdf
-*.opensdf
-*.vcxproj
-*vcxproj.*
+.report.json
+key.txt
+debug.log
 
-# MinGW generated files
-*.Debug
-*.Release
-
-# Python byte code
-*.pyc
-
-# Binaries
-# --------
-*.dll
-*.exe
-
+.coverage

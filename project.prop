@@ -1,0 +1,36 @@
+# This file contains a single dictionary definition containing all of the
+# project-specific customization options supported by this template. It is
+# parsed by the setup.py at build time.
+{
+    "NAME" : "friendlypics2",
+    "REPO" : "friendlypics2",
+    "DEPENDENCIES" : [
+        "qtpy",
+        "pyside2",
+        "friendlypins",
+    ],
+    "DEV_DEPENDENCIES" : [
+        "pytest",
+        "pytest-cov",
+        "mock",
+        "pylint",
+        "sphinx",
+        "sphinxcontrib-apidoc",
+        "sphinx-rtd-theme",
+        "sphinx-qt-documentation",
+        "tox",
+        "tox-factor",
+        "tox-pyenv",
+        # pinning coverage package until bugs with coveralls plugin is fixed
+        # https://github.com/z4r/python-coveralls/issues/73
+        "coverage<5.0",
+        "pyinstaller"
+    ],
+    "DATA": [
+        "data/ui/*"
+    ],
+    "DESCRIPTION" : "Friendly tool for organizing and sorting pictures",
+    "KEYWORDS" : "pictures organizer",
+    "SUPPORTED_PYTHON_VERSION" :
+        ">=3.5.0, <4",
+}
