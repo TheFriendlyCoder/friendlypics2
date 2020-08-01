@@ -6,7 +6,6 @@ from friendlypics2.dialogs.main_window import MainWindow
 # TODO: hook up exception handling
 # TODO: set up logging (https://stackoverflow.com/questions/28655198/best-way-to-display-logs-in-pyqt)
 # TODO: setup app configuration file for storing user settings
-# TODO: add about box that just shows version number
 
 
 def run(args):

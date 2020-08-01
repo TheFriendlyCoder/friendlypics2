@@ -14,7 +14,7 @@ filelock==3.0.12
 friendlypins==1.0.4
 idna==2.10
 imagesize==1.2.0
-iniconfig==1.0.0
+iniconfig==1.0.1
 isort==4.3.21
 Jinja2==2.11.2
 lazy-object-proxy==1.4.3
@@ -33,7 +33,7 @@ PyInstaller==3.6
 pylint==2.5.3
 pyparsing==2.4.7
 PySide2==5.15.0
-pytest==6.0.0
+pytest==6.0.1
 pytest-cov==2.10.0
 python-dateutil==2.8.1
 pytz==2020.1
@@ -58,5 +58,5 @@ tox-factor==0.1.2
 tox-pyenv==1.1.0
 tqdm==4.48.0
 urllib3==1.25.10
-virtualenv==20.0.28
+virtualenv==20.0.29
 wrapt==1.12.1
