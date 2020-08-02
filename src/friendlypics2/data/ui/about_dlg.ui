@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>416</width>
+    <width>441</width>
     <height>300</height>
    </rect>
   </property>
@@ -18,7 +18,7 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>421</width>
+     <width>441</width>
      <height>301</height>
     </rect>
    </property>
@@ -41,15 +41,21 @@
       <property name="text">
        <string>Running under default environment</string>
       </property>
+      <property name="wordWrap">
+       <bool>true</bool>
+      </property>
      </widget>
     </item>
     <item>
      <widget class="QLabel" name="source_label">
       <property name="text">
-       <string>Source code: &lt;a href='https://github.com/TheFriendlyCoder/friendlypics2'&gt;https://github.com/TheFriendlyCoder/friendlypics2&lt;/a&gt;</string>
+       <string>&lt;b&gt;Source code:&lt;/b&gt; &lt;a href=&quot;https://github.com/TheFriendlyCoder/friendlypics2&quot;&gt;https://github.com/TheFriendlyCoder/friendlypics2&lt;/a&gt;</string>
       </property>
       <property name="textFormat">
-       <enum>Qt::RichText</enum>
+       <enum>Qt::AutoText</enum>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
       </property>
       <property name="openExternalLinks">
        <bool>true</bool>
@@ -62,10 +68,13 @@
     <item>
      <widget class="QLabel" name="docs_label">
       <property name="text">
-       <string>Documentation: &lt;a href='https://friendly-pics-2.readthedocs.io/en/latest/'&gt;https://friendly-pics-2.readthedocs.io/en/latest/&lt;/a&gt;</string>
+       <string>&lt;b&gt;Documentation:&lt;/b&gt; &lt;a href=&quot;https://friendly-pics-2.readthedocs.io/en/latest/&quot;&gt;https://friendly-pics-2.readthedocs.io/en/latest/&lt;/a&gt;</string>
       </property>
       <property name="textFormat">
-       <enum>Qt::RichText</enum>
+       <enum>Qt::AutoText</enum>
+      </property>
+      <property name="wordWrap">
+       <bool>true</bool>
       </property>
       <property name="openExternalLinks">
        <bool>true</bool>
@@ -74,6 +83,42 @@
        <set>Qt::TextBrowserInteraction</set>
       </property>
      </widget>
+    </item>
+    <item>
+     <layout class="QHBoxLayout" name="horizontalLayout">
+      <property name="sizeConstraint">
+       <enum>QLayout::SetDefaultConstraint</enum>
+      </property>
+      <item>
+       <widget class="QLabel" name="gui_settings_label">
+        <property name="text">
+         <string>&lt;b&gt;GUI Settings:&lt;/b&gt; FriendlyPics2.plist</string>
+        </property>
+        <property name="wordWrap">
+         <bool>true</bool>
+        </property>
+        <property name="textInteractionFlags">
+         <set>Qt::LinksAccessibleByMouse|Qt::TextSelectableByKeyboard|Qt::TextSelectableByMouse</set>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="gui_settings_clear_button">
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Fixed" vsizetype="Fixed">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="text">
+         <string>Clear</string>
+        </property>
+        <property name="autoDefault">
+         <bool>false</bool>
+        </property>
+       </widget>
+      </item>
+     </layout>
     </item>
     <item>
      <widget class="QDialogButtonBox" name="buttonBox">

@@ -1,4 +1,5 @@
 """helper methods for use by GUI objects and dialogs"""
+from contextlib import contextmanager
 from qtpy import uic
 from pkg_resources import resource_filename
 
@@ -16,6 +17,42 @@ def load_ui(file, parent):
     """
     ui_file = resource_filename(PACKAGE_NAME, "data/ui/" + file)
     uic.loadUi(ui_file, parent)
+
+
+def generate_screen_id(screen):
+    """generates a unique identifier for a screen
+
+    Args:
+        screen (QScreen):
+            screen to be analysed
+
+    Returns:
+        str:
+            unique ID describing the given screen
+    """
+    if screen.serialNumber():
+        return screen.serialNumber()
+
+    return f"screen-{screen.name()}-{int(screen.physicalDotsPerInch())}dpi"
+
+
+@contextmanager
+def settings_group_context(settings, group_name):
+    """Context manager that starts loading settings from a specific sub-group and restores
+    the original settings group once the context goes out of scope
+
+    Code within this context will load settings from the specified sub-group
+
+    Args:
+        settings (QSettings): settings for the running app
+        group_name (str): name of the settings group to invoke
+
+    """
+    settings.beginGroup(group_name)
+    try:
+        yield
+    finally:
+        settings.endGroup()
 
 
 if __name__ == "__main__":  # pragma: no cover

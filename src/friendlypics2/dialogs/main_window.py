@@ -1,11 +1,10 @@
 """GUI dialog defining behavior of main application window"""
 import logging
-
-from qtpy.QtWidgets import QMainWindow
-from qtpy.QtCore import Slot
+from qtpy.QtWidgets import QMainWindow, QApplication
+from qtpy.QtCore import Slot, QSettings, QPoint, QSize, QRect
 from qtpy.QtGui import QKeySequence
 
-from friendlypics2.misc.gui_helpers import load_ui
+from friendlypics2.misc.gui_helpers import load_ui, generate_screen_id, settings_group_context
 from friendlypics2.misc.app_helpers import is_mac_app_bundle
 from friendlypics2.dialogs.about_dlg import AboutDialog
 
@@ -13,11 +12,49 @@ from friendlypics2.dialogs.about_dlg import AboutDialog
 class MainWindow(QMainWindow):
     """Main window interface"""
     def __init__(self):
-        super().__init__()
+        super().__init__(parent=None)
+        # Initialize private properties
         self._log = logging.getLogger(__name__)
+        self._disable_window_save = False
+
+        # Initialize window
         self.setWindowTitle("Friendly Pics")
         self.statusBar().showMessage('Ready')
+
+        self._settings = QSettings()
         self._load_ui()
+        self._load_window_state()
+
+    def _find_default_screen(self):
+        """Screen: loads the screen ID for the screen where the application window should appear by default
+
+        NOTE: this helper method assumes that the caller has already changed the active context of
+        the self.settings object to point to the window we need to process
+        """
+        groups = self._settings.childGroups()
+        default_group_id = self._settings.value("LastScreen")
+
+        all_screens = dict()
+        for cur_screen in QApplication.screens():
+            all_screens[generate_screen_id(cur_screen)] = cur_screen
+
+        # Favor the last used screen if it is still available
+        if default_group_id in all_screens.keys():
+            self._log.debug(f"Loading layout for previously used screen {default_group_id}")
+            return all_screens[default_group_id]
+
+        # if last used screen is not found, see if we have any cached screen details
+        # that map to one of our available screen
+        cached_screen_ids = set(all_screens.keys()).intersection(set(groups))
+
+        # If so, return the first match
+        if cached_screen_ids:
+            return all_screens[cached_screen_ids[0]]
+
+        # If all else fails and there are no defaults to be found, return the default screen
+        default_screen_id = generate_screen_id(QApplication.screens()[0])
+        self._log.debug("Loading a default screen layout")
+        return all_screens[default_screen_id]
 
     def _load_ui(self):
         """Internal helper method that configures the UI for the main window"""
@@ -34,6 +71,40 @@ class MainWindow(QMainWindow):
         if not is_mac_app_bundle():
             self.menuBar().setNativeMenuBar(False)
 
+    def _load_window_state(self):
+        """Restores window layout to it's previous state. Must be called after _load_ui"""
+        # Load all settings for this specific window
+        with settings_group_context(self._settings, self.objectName()):
+            target_screen = self._find_default_screen()
+
+            # by default, scale our window to half the target screen's size
+            default_width = int(target_screen.geometry().width() / 2)
+            default_height = int(target_screen.geometry().height() / 2)
+            default_size = QSize(default_width, default_height)
+
+            # by default, center the window within the target screen
+            geom = QRect(QPoint(0, 0), default_size)
+            geom.moveCenter(target_screen.geometry().center())
+            default_pos = geom.topLeft()
+
+            with settings_group_context(self._settings, generate_screen_id(target_screen)):
+                # TODO: do some additional sanity checking to make sure the target position and size
+                #       lie within the screen boundaries and if not, fallback to defaults
+                self.resize(self._settings.value("size", default_size))
+                self.move(self._settings.value("pos", default_pos))
+
+    def _save_window_state(self):
+        """Saves the current window state so it can be restored on next run"""
+        # Save settings just for this window
+        with settings_group_context(self._settings, self.objectName()):
+            # Save window layout for the currently used screen
+            cur_screen_id = generate_screen_id(self.screen())
+            self._settings.setValue("LastScreen", cur_screen_id)
+            with settings_group_context(self._settings, cur_screen_id):
+                self._settings.setValue("size", self.size())
+                self._settings.setValue("pos", self.pos())
+        self._settings.sync()
+
     @Slot()
     def file_open_click(self):
         """callback for file-open menu"""
@@ -44,15 +115,19 @@ class MainWindow(QMainWindow):
         """callback for the help-about menu"""
         dlg = AboutDialog(self)
         dlg.exec_()
+        self._disable_window_save = dlg.cleared
 
-    def closeEvent(self, _event):  # pylint: disable=invalid-name
-        """event handler called when the application is about to close"""
-        # TODO: check for unsaved work
+    def closeEvent(self, event):  # pylint: disable=invalid-name
+        """event handler called when the application is about to close
+
+        Args:
+            event (QCloseEvent):
+                reference to the event object being raised
+        """
         self._log.debug("Shutting down")
-        # if True:
-        #     event.accept()
-        # else:
-        #     event.ignore()
+        if not self._disable_window_save:
+            self._save_window_state()
+        event.accept()
 
 
 if __name__ == "__main__":  # pragma: no cover
