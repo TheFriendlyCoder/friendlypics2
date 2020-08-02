@@ -16,7 +16,6 @@ class AboutDialog(QDialog):
         self.setModal(True)
         self.settings = QSettings()
         self._load_ui()
-
         # Flag indicating whether the user has requested the GUI settings to be reset.
         # If so, the caller should disable any further settings recording logic
         self.cleared = False

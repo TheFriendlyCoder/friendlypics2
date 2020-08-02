@@ -1,4 +1,5 @@
 """helper methods for use by GUI objects and dialogs"""
+import logging
 from contextlib import contextmanager
 from qtpy import uic
 from pkg_resources import resource_filename
@@ -53,6 +54,29 @@ def settings_group_context(settings, group_name):
         yield
     finally:
         settings.endGroup()
+
+
+class GuiLogger(logging.Handler):
+    """Custom Python log handler that redirects output to a Qt widget"""
+    def __init__(self, widget):
+        """
+        Args:
+            widget (QWidget):
+                text widget to redirect log output to
+        """
+        super().__init__()
+
+        self.widget = widget
+        self.widget.setReadOnly(True)
+
+    def emit(self, record):
+        """Displays a log message to the GUI"""
+        # TODO: consider disabling log output when the UI isn't being shown
+        msg = self.format(record)
+        self.widget.appendPlainText(msg)
+
+    def write(self, _):
+        """Disable disk-based file access"""
 
 
 if __name__ == "__main__":  # pragma: no cover
