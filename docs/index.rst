@@ -3,7 +3,7 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to friendlypics' documentation!
+Welcome to FriendlyPics2' documentation!
 ========================================
 
 .. image:: https://img.shields.io/pypi/l/friendlypics2.svg
