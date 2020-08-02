@@ -303,12 +303,17 @@ setup(
     license="Apache License 2.0",
     # https://pypi.org/classifiers/
     classifiers=[
-        "Development Status :: 3 - Alpha",
-        "Environment :: Console",
+        "Development Status :: 1 - Planning",
+        "Environment :: MacOS X",
+        "Environment :: Win32 (MS Windows)",
+        "Environment :: X11 Applications :: Qt",
         "License :: OSI Approved :: Apache Software License",
-        "Topic :: Software Development :: Libraries",
+        "Intended Audience :: End Users/Desktop",
         "Natural Language :: English",
         "Operating System :: OS Independent",
         "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.8",
+        "Topic :: Desktop Environment :: File Managers",
+        "Topic :: Multimedia :: Graphics :: Viewers"
     ]
 )
