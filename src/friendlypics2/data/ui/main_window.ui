@@ -44,6 +44,7 @@
     </property>
     <addaction name="file_open_menu"/>
     <addaction name="separator"/>
+    <addaction name="file_settings_menu"/>
    </widget>
    <widget class="QMenu" name="menu_Help">
     <property name="title">
@@ -101,7 +102,12 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Debug Window</string>
+    <string>&amp;Debug Window</string>
+   </property>
+  </action>
+  <action name="file_settings_menu">
+   <property name="text">
+    <string>&amp;Settings...</string>
    </property>
   </action>
  </widget>

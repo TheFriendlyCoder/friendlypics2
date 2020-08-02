@@ -1,3 +1,3 @@
 {
-    "files": ["main.py","form.ui","src/friendlypics2/data/ui/main_window.ui","src/friendlypics2/data/ui/form.ui","pinterest_dump.ui","src/friendlypics2/data/ui/pinterest_dump.ui","src/friendlypics2/data/ui/about_dlg.ui"]
+    "files": ["src/friendlypics2/data/ui/form.ui","src/friendlypics2/data/ui/pinterest_dump.ui","pinterest_dump.ui","src/friendlypics2/data/ui/about_dlg.ui","src/friendlypics2/data/ui/main_window.ui","main.py","form.ui","src/friendlypics2/data/ui/settings_dlg.ui"]
 }

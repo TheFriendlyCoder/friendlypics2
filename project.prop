@@ -8,6 +8,8 @@
         "qtpy",
         "pyside2",
         "friendlypins",
+        "pyyaml",
+        "appdirs"
     ],
     "DEV_DEPENDENCIES" : [
         "pytest",
