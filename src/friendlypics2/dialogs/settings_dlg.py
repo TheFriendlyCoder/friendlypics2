@@ -7,7 +7,11 @@ from friendlypics2.misc.gui_helpers import load_ui
 
 
 class SettingsItem:
-    """Interface to a single application setting or group of application settings"""
+    """Interface to a single application setting or group of application settings
+
+    Loosely based on example code found
+    `here <https://github.com/pyside/Examples/blob/master/examples/itemviews/simpletreemodel/simpletreemodel.py>`__
+    """
     def __init__(self, data, parent=None):
         """
         Args:
@@ -24,6 +28,15 @@ class SettingsItem:
 
     def __str__(self):
         return json.dumps(self._item_data, indent=4)
+
+    def set_data(self, value):
+        """Modifies the data value for this setting
+
+        Args:
+            value (str):
+                new value for this setting
+        """
+        self._item_data = (self._item_data[0], value)
 
     @property
     def child_items(self):
@@ -79,7 +92,11 @@ class SettingsItem:
 
 
 class AppSettingsModel(QAbstractItemModel):
-    """Interface for rendering application settings stored in a hierarchical format"""
+    """Interface for rendering application settings stored in a hierarchical format
+
+    Loosely based on example code found
+    `here <https://github.com/pyside/Examples/blob/master/examples/itemviews/simpletreemodel/simpletreemodel.py>`__
+    """
     def __init__(self, data):
         """
         Args:
@@ -91,6 +108,11 @@ class AppSettingsModel(QAbstractItemModel):
         self._settings = data
         self._root_item = SettingsItem(("Setting", "Value"))
         self._setup_model_data(self._settings.data, self._root_item)
+
+    @property
+    def root_item(self):
+        """SettingsItem: gets the root node of our settings tree"""
+        return self._root_item
 
     def _setup_model_data(self, data, parent):
         """Helper method used to populate our model data
@@ -144,15 +166,41 @@ class AppSettingsModel(QAbstractItemModel):
                 data for the specified setting within the given context, or None if no
                 data suitable for the given role can be found
         """
-        if not index.isValid():
-            return None
-
-        if role != Qt.DisplayRole:
+        if not index.isValid() or role != Qt.DisplayRole:
             return None
 
         item = index.internalPointer()
 
         return item.data(index.column())
+
+    def setData(self, index, value, role):  # pylint: disable=invalid-name
+        """Modifies the value of a settings
+
+        Loosely based on example code found
+        `here <https://doc.qt.io/qtforpython/overviews/model-view-programming.html#an-editable-model>`__
+
+        Args:
+            index (QModelIndex):
+                index of the app setting to modify
+            value (str):
+                new data value for the setting
+            role:
+                `ItemDataRole <https://doc.qt.io/qt-5/qt.html#ItemDataRole-enum>`__
+                of the role within the view where the data is being edited
+
+        Returns:
+            bool: True if the data was successfully modified, False if not
+        """
+        if not index.isValid() or role != Qt.EditRole:
+            return False
+
+        item = index.internalPointer()
+        item.set_data(value)
+
+        # resync the data in the view
+        self.dataChanged.emit(index, index)
+
+        return True
 
     def flags(self, index):  # pylint: disable=no-self-use
         """gets bit-field describing how a given setting should be rendered
@@ -167,7 +215,7 @@ class AppSettingsModel(QAbstractItemModel):
         if not index.isValid():
             return Qt.NoItemFlags
 
-        return Qt.ItemIsEnabled | Qt.ItemIsSelectable
+        return Qt.ItemIsEnabled | Qt.ItemIsSelectable | Qt.ItemIsEditable
 
     def headerData(self, section, orientation, role):  # pylint: disable=invalid-name
         """Gets column header text for the view
@@ -288,14 +336,35 @@ class SettingsDialog(QDialog):
 
         model = AppSettingsModel(self._settings)
         self.settings_view.setModel(model)
-        self.settings_view.setWindowTitle("Simple Tree Model")
-        self.settings_view.show()
 
         # Center the about box on the parent window
         parent_geom = self.parent().geometry()
         self.move(parent_geom.center() - self.rect().center())
 
+    def _load_data(self, item):
+        """helper method that dumps the raw data from the settings data model to a dictionary
+
+        Args:
+            item(SettingsItem):
+                reference to the item to retrieve settings data from. Data will be generated
+                recursively for all children owned by the settings item.
+
+        Returns:
+            dict: updated settings data loaded from the data model
+        """
+        retval = dict()
+        for cur_child in item.child_items:
+            if cur_child.child_items:
+                temp_data = self._load_data(cur_child)
+            else:
+                temp_data = cur_child.data(1)
+            retval[cur_child.data(0)] = temp_data
+        return retval
+
     @Slot()
     def _save_clicked(self):
         """Callback for when the user clicks the save button"""
-        self._log.debug("Saving")
+        new_data = self._load_data(self.settings_view.model().root_item)
+        self._settings.data = new_data
+        self._settings.save()
+        self.close()

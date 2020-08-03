@@ -21,7 +21,6 @@ class MainWindow(QMainWindow):
 
         # Initialize app settings
         self._app_settings = AppSettings()
-        self._app_settings.pinterest_user = "kevinp@ca.ibm.com"
 
         # Initialize window
         self._log.debug("Initializing main window...")

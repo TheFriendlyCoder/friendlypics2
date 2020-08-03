@@ -2,6 +2,7 @@
 import logging
 from pathlib import Path
 import json
+from copy import deepcopy
 
 import yaml
 from appdirs import user_config_dir
@@ -30,6 +31,10 @@ class AppSettings:
         """dict: reference to the raw settings data managed by this object.
         Used exclusively for the settings dialog"""
         return self._data
+
+    @data.setter
+    def data(self, value):
+        self._data = deepcopy(value)
 
     @property
     def path(self):
