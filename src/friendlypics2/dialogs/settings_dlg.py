@@ -5,7 +5,7 @@ from qtpy.QtWidgets import QDialog
 from qtpy.QtCore import Slot, QAbstractItemModel, QModelIndex, Qt
 from friendlypics2.misc.gui_helpers import load_ui
 
-
+# TODO: fix pylint warnings with this class - it's only used internally by the model below
 class SettingsItem:
     """Interface to a single application setting or group of application settings
 

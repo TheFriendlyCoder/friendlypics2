@@ -1,14 +1,138 @@
 """GUI dialog defining behavior of main application window"""
 import logging
-from qtpy.QtWidgets import QMainWindow, QApplication
-from qtpy.QtCore import Slot, QSettings, QPoint, QSize, QRect
-from qtpy.QtGui import QKeySequence
+from pathlib import Path
+from qtpy.QtWidgets import QMainWindow, QApplication, QFileDialog
+from qtpy.QtCore import Slot, QSettings, QPoint, QSize, QRect, QModelIndex, QAbstractListModel, Qt
+from qtpy.QtGui import QKeySequence, QIcon
 
 from friendlypics2.misc.gui_helpers import load_ui, generate_screen_id, settings_group_context
 from friendlypics2.misc.app_helpers import is_mac_app_bundle
 from friendlypics2.dialogs.about_dlg import AboutDialog
 from friendlypics2.misc.app_settings import AppSettings
 from friendlypics2.dialogs.settings_dlg import SettingsDialog
+
+
+class ImageItem:
+    """Abstraction around an image that appears in the main list view"""
+    def __init__(self, file_path):
+        """
+        Args:
+            file_path (pathlib.Path):
+                path to the file managed by this instance
+        """
+        self._log = logging.getLogger(__name__)
+        self._file_path = file_path
+        self._thumbnail = None
+
+    @property
+    def thumbnail(self):
+        """QIcon: thumbnail representation of the image, lazy loaded when needed"""
+        if self._thumbnail:
+            return self._thumbnail
+        self._thumbnail = QIcon(str(self._file_path))
+        return self._thumbnail
+
+    @property
+    def file_name(self):
+        """str: name of the file managed by this object, excluding the path"""
+        return self._file_path.name
+
+
+class ImageModel(QAbstractListModel):
+    """Qt model that manages a list of images"""
+    def __init__(self, folder):
+        """
+        Args:
+            folder (pathlib.Path):
+                path containing images to be presented to the user
+        """
+        super().__init__(None)
+        self._log = logging.getLogger(__name__)
+        self._folder = folder
+        self._cache_size = 50  # only load the first 50 image thumbnails to reduce load times
+        self._data = self._setup_model_data()
+
+    @property
+    def max_count(self):
+        """int: gets the total number of images managed by this model"""
+        return len(self._data)
+
+    def data(self, index, role):
+        """retrieves data for a specific image given a specific role
+
+        Args:
+            index (QModelIndex):
+                index for the image to query
+            role:
+                `ItemDataRole <https://doc.qt.io/qt-5/qt.html#ItemDataRole-enum>`__
+                of the role within the view where the data will be used
+
+        Returns:
+            str or QIcon:
+                returns the name of the file when using the Display role, and returns
+                the image thumbnail when using the Decoration role
+        """
+        if not index.isValid() or role not in (Qt.DisplayRole, Qt.DecorationRole):
+            return None
+
+        if index.row() > len(self._data):
+            return None
+
+        if role == Qt.DecorationRole:
+            return self._data[index.row()].thumbnail
+        return self._data[index.row()].file_name
+
+    def rowCount(self, _):  # pylint: disable=invalid-name
+        """int: number of images in the model, lazy loaded as needed"""
+        return self._cache_size
+
+    def canFetchMore(self, parent):  # pylint: disable=invalid-name
+        """Is there more data to load from our model
+
+        Used for lazy loading image thumbnails only when needed
+
+        Args:
+            parent (QModelIndex):
+                reference to the parent item containing the images to load
+
+        Returns:
+            bool: True if there is more data to load from our model, False if not
+        """
+        if parent.isValid():
+            return False
+        retval = self._cache_size < len(self._data)
+        return retval
+
+    def fetchMore(self, parent):  # pylint: disable=invalid-name
+        """Lazily loads more image data when needed
+
+        Triggered by the view class when the user scrolls below the current end of
+        the viewable data
+
+        Args:
+            parent (QModelIndex):
+                reference to the parent item containing the images to load
+        """
+        if parent.isValid():
+            return
+        remainder = len(self._data) - self._cache_size
+        next_batch = min(10, remainder)
+        if next_batch <= 0:
+            return
+        self.beginInsertRows(QModelIndex(), self._cache_size, self._cache_size + next_batch - 1)
+        self._cache_size += next_batch
+        self.endInsertRows()
+
+    def _setup_model_data(self):
+        """list (ImageItem): Loads image metadata for all images in the model"""
+        retval = list()
+        for cur_file in sorted(self._folder.glob("*")):
+            if not cur_file.is_file():
+                continue
+            if not cur_file.suffix:
+                continue
+            retval.append(ImageItem(cur_file))
+        return retval
 
 
 class MainWindow(QMainWindow):
@@ -18,6 +142,7 @@ class MainWindow(QMainWindow):
         # Initialize private properties
         self._log = logging.getLogger(__name__)
         self._disable_window_save = False
+        self._last_path = None
 
         # Initialize app settings
         self._app_settings = AppSettings()
@@ -110,6 +235,11 @@ class MainWindow(QMainWindow):
             else:
                 self.debug_dock.hide()
                 self.window_debug_menu.setChecked(False)
+        self._last_path = self._settings.value("last_path", None)
+        if self._last_path:
+            model = ImageModel(self._last_path)
+            self.thumbnail_view.setModel(model)
+            self.statusBar().showMessage(f"Loaded {model.max_count} images")
 
     def _save_window_state(self):
         """Saves the current window state so it can be restored on next run"""
@@ -122,12 +252,21 @@ class MainWindow(QMainWindow):
                 self._settings.setValue("size", self.size())
                 self._settings.setValue("pos", self.pos())
             self._settings.setValue("window_debug", self.window_debug_menu.isChecked())
+        if self._last_path:
+            self._settings.setValue("last_path", self._last_path)
         self._settings.sync()
 
     @Slot()
     def file_open_click(self):
         """callback for file-open menu"""
-        self._log.debug("Opening...")
+        temp_path = self._last_path or Path("~").expanduser()
+        new_path = QFileDialog.getExistingDirectory(self, "Select folder...", str(temp_path))
+        if not new_path:
+            return
+        self._last_path = Path(new_path)
+        model = ImageModel(self._last_path)
+        self.thumbnail_view.setModel(model)
+        self.statusBar().showMessage(f"Loaded {model.max_count} images")
 
     @Slot()
     def help_about_click(self):
