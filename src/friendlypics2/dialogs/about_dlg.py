@@ -7,21 +7,20 @@ from friendlypics2.misc.gui_helpers import load_ui
 from friendlypics2.misc.app_helpers import is_mac_app_bundle, is_pyinstaller_bundle
 
 
-class AboutDialog(QDialog):
+class AboutDialog(QDialog):  # pylint: disable=too-many-instance-attributes
     """Logic for managing about box"""
-    def __init__(self, parent):
+    def __init__(self, parent, app_settings):
         super().__init__(parent)
         self._log = logging.getLogger(__name__)
-        self.setWindowTitle("About...")
-        self.setModal(True)
-        self.settings = QSettings()
+        self._settings = QSettings()
+        self._app_settings = app_settings
         self._load_ui()
         # Flag indicating whether the user has requested the GUI settings to be reset.
         # If so, the caller should disable any further settings recording logic
         self.cleared = False
 
     def _load_ui(self):
-        """Internal helper method that configures the UI for the main window"""
+        """Internal helper method that configures the UI for the dialog"""
         load_ui("about_dlg.ui", self)
 
         self.title_label = self.findChild(QLabel, "title_label")
@@ -36,10 +35,13 @@ class AboutDialog(QDialog):
             self.runtime_env_label.setText("Running under conventional Python environment")
 
         self.gui_settings_label = self.findChild(QLabel, "gui_settings_label")
-        self.gui_settings_label.setText(f"<b>GUI Settings:</b> {self.settings.fileName()}")
+        self.gui_settings_label.setText(f"<b>GUI Settings:</b> {self._settings.fileName()}")
 
         self.gui_settings_clear_button = self.findChild(QPushButton, "gui_settings_clear_button")
         self.gui_settings_clear_button.clicked.connect(self._clear_gui_settings)
+
+        self.app_settings_label = self.findChild(QLabel, "app_settings_label")
+        self.app_settings_label.setText(f"<b>App Settings:</b> {self._app_settings.path}")
 
         # Center the about box on the parent window
         parent_geom = self.parent().geometry()
@@ -48,7 +50,7 @@ class AboutDialog(QDialog):
     @Slot()
     def _clear_gui_settings(self):
         """Callback for when user selects the clear gui settings button"""
-        self.settings.clear()
-        self.settings.sync()
+        self._settings.clear()
+        self._settings.sync()
         self.gui_settings_clear_button.setEnabled(False)
         self.cleared = True
