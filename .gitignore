@@ -33,3 +33,4 @@ debug.log
 
 .coverage
 main.pyproject.user
+*.autosave
