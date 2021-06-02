@@ -58,6 +58,6 @@ tox==3.18.1
 tox-factor==0.1.2
 tox-pyenv==1.1.0
 tqdm==4.48.0
-urllib3==1.25.10
+urllib3==1.26.5
 virtualenv==20.0.29
 wrapt==1.12.1
